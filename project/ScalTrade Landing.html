@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ScalTrade — AI Mentor for Futures Traders</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0C0F;
+    --bg-2:#0E1116;
+    --surface:#111318;
+    --surface-2:#13161E;
+    --border:#1E2330;
+    --border-strong:#2A3142;
+    --text:#FFFFFF;
+    --muted:#A0AABD;
+    --muted-2:#6B7589;
+    --cyan:#00D4FF;
+    --purple:#7B61FF;
+    --green:#00FF85;
+    --red:#FF3B5C;
+    --amber:#FFB547;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:'Inter',ui-sans-serif,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    font-feature-settings:'ss01','cv11';
+  }
+  body{overflow-x:hidden}
+  ::selection{background:rgba(0,212,255,.35);color:#fff}
+  .mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-feature-settings:'zero','ss01'}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  /* Subtle grid backdrop */
+  .grid-bg{
+    background-image:
+      linear-gradient(to right, rgba(30,35,48,.35) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(30,35,48,.35) 1px, transparent 1px);
+    background-size:64px 64px;
+  }
+  /* Hairline */
+  .hr{height:1px;background:linear-gradient(to right,transparent,var(--border),transparent)}
+  /* Glow utilities */
+  .glow-cyan{box-shadow:0 0 0 1px rgba(0,212,255,.35), 0 20px 60px -20px rgba(0,212,255,.4), inset 0 0 0 1px rgba(0,212,255,.15)}
+  .scrollbar::-webkit-scrollbar{height:6px;width:6px}
+  .scrollbar::-webkit-scrollbar-thumb{background:#2A3142;border-radius:6px}
+  /* Marquee */
+  @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+  .marquee-track{animation:marquee 40s linear infinite}
+  /* Pulse dot */
+  @keyframes pulseDot { 0%,100%{box-shadow:0 0 0 0 rgba(0,255,133,.6)} 50%{box-shadow:0 0 0 8px rgba(0,255,133,0)} }
+  .pulse-dot{animation:pulseDot 2s ease-in-out infinite}
+  /* Ticker blink */
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+  .blink{animation:blink 1.4s ease-in-out infinite}
+  /* Reveal */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .8s ease, transform .8s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  /* Scroll snap chart hover lift */
+  .lift{transition:transform .25s ease, border-color .25s ease, background .25s ease}
+  .lift:hover{transform:translateY(-2px);border-color:var(--border-strong)}
+
+  /* Buttons */
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:12px 18px;border-radius:8px;font-weight:600;font-size:14px;
+    letter-spacing:-0.01em;transition:transform .15s ease, box-shadow .2s ease, background .2s ease;
+    white-space:nowrap;
+  }
+  .btn-primary{
+    background:linear-gradient(180deg, #25E0FF 0%, #00B8E6 100%);
+    color:#001019;
+    box-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 0 0 1px rgba(0,212,255,.5), 0 14px 40px -12px rgba(0,212,255,.55);
+  }
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 0 0 1px rgba(0,212,255,.7), 0 18px 50px -10px rgba(0,212,255,.7)}
+  .btn-ghost{background:transparent;color:#fff;border:1px solid var(--border-strong)}
+  .btn-ghost:hover{border-color:#3A4358;background:rgba(255,255,255,.02)}
+  .btn-sm{padding:8px 12px;font-size:13px}
+
+  /* Section headings */
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--cyan);
+  }
+  .eyebrow::before{content:"";width:6px;height:6px;background:var(--cyan);border-radius:50%;box-shadow:0 0 12px var(--cyan)}
+  h1,h2,h3,h4{margin:0;letter-spacing:-0.025em;font-weight:700;color:#fff}
+  h2{font-size:48px;line-height:1.05;letter-spacing:-0.03em}
+  p{color:var(--muted);line-height:1.55;margin:0}
+
+  /* Container */
+  .container{max-width:1280px;margin:0 auto;padding:0 32px}
+  @media (max-width:720px){.container{padding:0 20px}}
+
+  /* Tags / chips */
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:4px 10px;border-radius:999px;
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.04em;
+    background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--muted);
+  }
+  .chip.cyan{color:var(--cyan);border-color:rgba(0,212,255,.25);background:rgba(0,212,255,.06)}
+  .chip.purple{color:var(--purple);border-color:rgba(123,97,255,.3);background:rgba(123,97,255,.07)}
+  .chip.green{color:var(--green);border-color:rgba(0,255,133,.25);background:rgba(0,255,133,.06)}
+  .chip.red{color:var(--red);border-color:rgba(255,59,92,.3);background:rgba(255,59,92,.07)}
+
+  /* Card surfaces */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px}
+  .card-2{background:var(--surface-2);border:1px solid var(--border);border-radius:14px}
+
+  /* Sticky nav frosted on scroll */
+  .nav{position:sticky;top:0;z-index:50;backdrop-filter:saturate(140%) blur(0px);transition:background .3s ease, backdrop-filter .3s ease, border-color .3s ease;border-bottom:1px solid transparent}
+  .nav.scrolled{background:rgba(10,12,15,.72);backdrop-filter:saturate(140%) blur(14px);border-bottom-color:var(--border)}
+
+  /* Spark numbers */
+  .num-tab{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+
+  /* Table rows */
+  table.cmp{border-collapse:separate;border-spacing:0;width:100%;font-size:14px}
+  table.cmp th, table.cmp td{padding:14px 18px;text-align:center;border-bottom:1px solid var(--border)}
+  table.cmp th{font-weight:500;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+  table.cmp td:first-child, table.cmp th:first-child{text-align:left;color:#fff;font-weight:500;font-family:'Inter',sans-serif;text-transform:none;letter-spacing:0;font-size:14px}
+  table.cmp .col-rd{background:linear-gradient(180deg, rgba(0,212,255,.08), rgba(0,212,255,.02));border-left:1px solid rgba(0,212,255,.25);border-right:1px solid rgba(0,212,255,.25)}
+  table.cmp tr:last-child td.col-rd{border-bottom:1px solid rgba(0,212,255,.25)}
+  table.cmp thead th.col-rd{border-top:1px solid rgba(0,212,255,.25)}
+
+  /* Footnote */
+  small{color:var(--muted-2)}
+
+  /* Loader screen */
+  .preload{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:99;opacity:1;transition:opacity .4s ease}
+  .preload.gone{opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+  <div class="preload" id="preload">
+    <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.18em">
+      <span style="width:8px;height:8px;background:var(--cyan);border-radius:50%;box-shadow:0 0 10px var(--cyan)" class="blink"></span>
+      INITIALIZING SCALTRADE · MARKET FEED
+    </div>
+  </div>
+
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="src/icons.jsx"></script>
+  <script type="text/babel" src="src/chart.jsx"></script>
+  <script type="text/babel" src="src/mockups.jsx"></script>
+  <script type="text/babel" src="src/sections.jsx"></script>
+  <script type="text/babel" src="src/app.jsx"></script>
+</body>
+</html>
