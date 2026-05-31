@@ -610,7 +610,13 @@ function Footer() {
     ['Product', ['Features','AI Mentor','Backtesting','Risk Dashboard','Pricing','Changelog']],
     ['Resources', ['Docs','API Reference','Strategy Library','Backtest Methodology','Status','Security']],
     ['Company', ['About','Manifesto','Careers','Press kit','Contact']],
-    ['Legal', ['Terms','Privacy','Cookie policy','Disclosure','Risk warning']],
+    ['Legal', [
+      ['Terms','/terms.html'],
+      ['Privacy','/privacy.html'],
+      ['Cookie policy','/privacy.html#cookies'],
+      ['Disclosure','/terms.html'],
+      ['Risk warning','/terms.html#risk'],
+    ]],
   ];
   return (
     <footer style={{borderTop:'1px solid var(--border)',padding:'72px 0 36px',background:'#08090C'}}>
@@ -639,12 +645,15 @@ function Footer() {
             <div key={title}>
               <div className="mono" style={{fontSize:11,letterSpacing:'.18em',color:'var(--muted-2)',marginBottom:14}}>{title.toUpperCase()}</div>
               <ul style={{listStyle:'none',padding:0,margin:0,display:'flex',flexDirection:'column',gap:10}}>
-                {items.map(it=>(
-                  <li key={it}><a href="#" style={{fontSize:13.5,color:'#D7DCEA',transition:'color .15s'}}
-                    onMouseEnter={e=>e.currentTarget.style.color='var(--cyan)'}
-                    onMouseLeave={e=>e.currentTarget.style.color='#D7DCEA'}
-                  >{it}</a></li>
-                ))}
+                {items.map(it=>{
+                  const [label, href] = Array.isArray(it) ? it : [it, '#'];
+                  return (
+                    <li key={label}><a href={href} style={{fontSize:13.5,color:'#D7DCEA',transition:'color .15s'}}
+                      onMouseEnter={e=>e.currentTarget.style.color='var(--cyan)'}
+                      onMouseLeave={e=>e.currentTarget.style.color='#D7DCEA'}
+                    >{label}</a></li>
+                  );
+                })}
               </ul>
             </div>
           ))}

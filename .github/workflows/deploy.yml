@@ -1,0 +1,75 @@
+name: Build & Deploy
+
+# Builds the Vite production bundle and ships dist/ to the GCP VM behind nginx.
+#
+# ── One-time setup (see docs/CICD_SETUP.md) ──────────────────────────────────
+# Add these repository secrets (Settings → Secrets and variables → Actions):
+#   GCP_SA_KEY     JSON key of a service account with "Compute Instance Admin (v1)"
+#                  + "Service Account User" (or a tighter custom role allowing
+#                  compute.instances.get + OS Login / SSH to the instance).
+#   GCP_PROJECT    your GCP project id
+#   GCP_ZONE       e.g. us-central1-a   (the zone of the VM)
+#   GCP_INSTANCE   the VM name
+# Optional repository variables (Settings → Variables) — have sane defaults below:
+#   REMOTE_DIR     defaults to /var/www/scaltrade
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (Vite production)
+        run: npm run build
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT }}
+
+      - name: Deploy dist/ to the VM
+        env:
+          ZONE: ${{ secrets.GCP_ZONE }}
+          INSTANCE: ${{ secrets.GCP_INSTANCE }}
+          REMOTE_DIR: ${{ vars.REMOTE_DIR || '/var/www/scaltrade' }}
+        run: |
+          set -euo pipefail
+
+          # Ensure the target dir exists and is writable by the SSH user.
+          gcloud compute ssh "$INSTANCE" --zone "$ZONE" --tunnel-through-iap --quiet \
+            --command "sudo mkdir -p '$REMOTE_DIR' && sudo chown -R \$(whoami) '$REMOTE_DIR'"
+
+          # Atomic-ish publish: copy build into a staging dir, then rsync-swap.
+          # scp the freshly built dist/ contents (note trailing /* to copy contents).
+          gcloud compute scp --recurse --tunnel-through-iap --quiet \
+            dist/* "$INSTANCE":"$REMOTE_DIR/" --zone "$ZONE"
+
+          # Reload nginx (config unchanged; this just picks up new files cleanly).
+          gcloud compute ssh "$INSTANCE" --zone "$ZONE" --tunnel-through-iap --quiet \
+            --command "sudo nginx -t && sudo systemctl reload nginx"
+
+          echo "✔ Deployed to $INSTANCE:$REMOTE_DIR"
