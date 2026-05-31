@@ -41,15 +41,32 @@ function CountUp({ to, suffix='', prefix='', decimals=0, duration=1400 }) {
   return <span ref={ref} className="num-tab">{prefix}{n.toLocaleString(undefined,{minimumFractionDigits:decimals,maximumFractionDigits:decimals})}{suffix}</span>;
 }
 
+/* Smooth-scroll to the waitlist section and focus its email field.
+   Shared by every "Get Early Access" CTA (nav, hero, pricing, footer). */
+function goWaitlist() {
+  const sec = document.getElementById('waitlist');
+  if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const input = document.getElementById('waitlist-email');
+  if (input) setTimeout(() => {
+    try { input.focus({ preventScroll: true }); } catch (e) { input.focus(); }
+  }, 600);
+}
+
 /* ============== NAV ============== */
 function Nav() {
   const [scrolled, setScrolled] = sUS(false);
+  const [toast, setToast] = sUS(null);
   sUE(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+  sUE(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 2200);
+    return () => clearTimeout(id);
+  }, [toast]);
   return (
     <nav className={`nav ${scrolled?'scrolled':''}`}>
       <div className="container" style={{display:'flex',alignItems:'center',height:64,gap:24}}>
@@ -63,24 +80,37 @@ function Nav() {
           }}>BETA</span>
         </a>
         <div style={{flex:1,display:'flex',justifyContent:'center',gap:28}} className="hide-md">
-          {['Features','AI Mentor','Backtesting','Pricing','Docs'].map(t=>(
-            <a key={t} href={`#${t.toLowerCase().replace(/\s+/g,'-')}`}
-              style={{fontSize:14,color:'var(--muted)',transition:'color .15s'}}
+          {['Features','AI Mentor','Backtesting','Pricing','Docs'].map(t=>{
+            const isDocs = t === 'Docs';
+            return (
+            <a key={t} href={isDocs ? '#' : `#${t.toLowerCase().replace(/\s+/g,'-')}`}
+              onClick={isDocs ? (e)=>{ e.preventDefault(); setToast('Docs — coming soon'); } : undefined}
+              style={{fontSize:14,color:'var(--muted)',transition:'color .15s',cursor:'pointer'}}
               onMouseEnter={e=>e.currentTarget.style.color='#fff'}
               onMouseLeave={e=>e.currentTarget.style.color='var(--muted)'}
             >{t}</a>
-          ))}
+            );
+          })}
         </div>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <button className="btn btn-ghost btn-sm hide-sm">
             <span style={{width:6,height:6,borderRadius:'50%',background:'var(--green)',boxShadow:'0 0 6px var(--green)'}}/>
             Connect IBKR
           </button>
-          <button className="btn btn-primary btn-sm">
+          <button className="btn btn-primary btn-sm" onClick={goWaitlist}>
             Get Early Access <Icon.ArrowRight size={14}/>
           </button>
         </div>
       </div>
+      {toast && (
+        <div className="mono" style={{
+          position:'fixed',left:'50%',bottom:28,transform:'translateX(-50%)',
+          zIndex:200,padding:'10px 16px',borderRadius:8,
+          background:'rgba(17,19,24,.96)',border:'1px solid var(--border-strong)',
+          color:'#fff',fontSize:12,letterSpacing:'.04em',
+          boxShadow:'0 20px 60px -20px rgba(0,0,0,.7)'
+        }}>{toast}</div>
+      )}
       <style>{`
         @media (max-width: 960px){.hide-md{display:none!important}}
         @media (max-width: 560px){.hide-sm{display:none!important}}
@@ -148,7 +178,7 @@ function SocialProof() {
 /* ============== PROBLEM / SOLUTION ============== */
 function ProblemSolution() {
   return (
-    <section style={{padding:'120px 0'}}>
+    <section id="ai-mentor" style={{padding:'120px 0'}}>
       <div className="container">
         <div className="reveal" style={{maxWidth:720,marginBottom:60}}>
           <div className="eyebrow">The discipline gap</div>
@@ -512,7 +542,7 @@ function Pricing() {
                 ))}
               </ul>
 
-              <button className={`btn ${p.ctaVar==='primary'?'btn-primary':'btn-ghost'}`} style={{marginTop:28,justifyContent:'center'}}>
+              <button className={`btn ${p.ctaVar==='primary'?'btn-primary':'btn-ghost'}`} style={{marginTop:28,justifyContent:'center'}} onClick={goWaitlist}>
                 {p.cta} {p.ctaVar==='primary' && <Icon.ArrowRight size={14}/>}
               </button>
             </div>
@@ -533,7 +563,7 @@ function Pricing() {
 /* ============== FINAL CTA ============== */
 function FinalCTA() {
   return (
-    <section style={{position:'relative',padding:'120px 0',overflow:'hidden'}}>
+    <section id="waitlist" style={{position:'relative',padding:'120px 0',overflow:'hidden'}}>
       <div className="grid-bg" style={{position:'absolute',inset:0,opacity:.5,maskImage:'radial-gradient(ellipse at center, #000 30%, transparent 75%)',WebkitMaskImage:'radial-gradient(ellipse at center, #000 30%, transparent 75%)'}}/>
       <div style={{position:'absolute',inset:0,opacity:.18}}>
         <CandlesChart width={1600} height={500} count={140} seed={71} vol={45} ghostOpacity={1} animate={false}/>
@@ -555,11 +585,11 @@ function FinalCTA() {
               padding:'4px 4px 4px 16px',
               boxShadow:'0 0 0 1px rgba(0,212,255,.2), 0 20px 60px -20px rgba(0,212,255,.4)'
             }}>
-              <input placeholder="trader@yourdesk.com" style={{
+              <input id="waitlist-email" placeholder="trader@yourdesk.com" style={{
                 background:'transparent',border:'none',outline:'none',color:'#fff',
                 fontSize:14,fontFamily:'inherit',padding:'10px 8px',width:260
               }}/>
-              <button className="btn btn-primary">Get Early Access <Icon.ArrowRight size={14}/></button>
+              <button className="btn btn-primary" onClick={goWaitlist}>Get Early Access <Icon.ArrowRight size={14}/></button>
             </div>
           </div>
 
@@ -645,6 +675,7 @@ function Footer() {
   );
 }
 
+window.goWaitlist = goWaitlist;
 window.useReveal = useReveal;
 window.Nav = Nav;
 window.SocialProof = SocialProof;

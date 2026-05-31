@@ -62,7 +62,7 @@ function Hero({ ghostOpacity, animateChart, headlineMode }) {
               ScalTrade connects directly to Interactive Brokers to validate every trade against your strategy — in real time. <span style={{color:'#fff'}}>Stop reacting. Start trading with discipline.</span>
             </p>
             <div style={{display:'flex',gap:12,marginTop:32,flexWrap:'wrap'}}>
-              <button className="btn btn-primary" style={{padding:'14px 22px',fontSize:15}}>
+              <button className="btn btn-primary" style={{padding:'14px 22px',fontSize:15}} onClick={goWaitlist}>
                 Get Early Access <Icon.ArrowRight size={15}/>
               </button>
               <button className="btn btn-ghost" style={{padding:'14px 20px',fontSize:15}}>

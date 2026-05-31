@@ -25,6 +25,9 @@
     --amber:#FFB547;
   }
   *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  /* Offset anchored sections so the sticky nav doesn't cover their headings */
+  section[id]{scroll-margin-top:84px}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
     font-family:'Inter',ui-sans-serif,system-ui,sans-serif;
     -webkit-font-smoothing:antialiased;
