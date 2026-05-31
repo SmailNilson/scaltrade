@@ -106,7 +106,9 @@ function Hero({ ghostOpacity, animateChart, headlineMode }) {
 }
 
 function App() {
-  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  // Production: tweaks panel removed. Freeze the design defaults so the
+  // rendered output matches the prototype's initial state pixel-for-pixel.
+  const tweaks = TWEAK_DEFAULTS;
   useReveal();
 
   // Hide preloader
@@ -142,35 +144,6 @@ function App() {
       <Pricing/>
       <FinalCTA/>
       <Footer/>
-
-      <TweaksPanel title="Tweaks">
-        <TweakSection label="Brand accent"/>
-        <TweakRadio
-          label="Primary color"
-          value={tweaks.accent}
-          options={['cyan','emerald','violet','amber']}
-          onChange={v=>setTweak('accent', v)}
-        />
-        <TweakSection label="Hero"/>
-        <TweakRadio
-          label="Headline"
-          value={tweaks.headlineMode}
-          options={['split','rules','edge']}
-          onChange={v=>setTweak('headlineMode', v)}
-        />
-        <TweakSlider
-          label="Ghost chart opacity"
-          value={tweaks.ghostOpacity} min={0} max={0.35} step={0.01}
-          onChange={v=>setTweak('ghostOpacity', v)}
-        />
-        <TweakSection label="Layout"/>
-        <TweakRadio
-          label="Density"
-          value={tweaks.density}
-          options={['comfy','compact']}
-          onChange={v=>setTweak('density', v)}
-        />
-      </TweaksPanel>
     </>
   );
 }
