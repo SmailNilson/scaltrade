@@ -1,25 +1,52 @@
-# CODING AGENTS: READ THIS FIRST
+# ScalTrade — Landing Page
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+Landing page marketing pour **ScalTrade** (nom commercial du projet RiskDesk) — un workspace
+de trading Futures « AI-mentored » qui se connecte à Interactive Brokers et valide chaque trade
+contre la stratégie du trader, en temps réel.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+> Domaine cible : **scaltrade.com**
 
-## What you should do — IMPORTANT
+## Stack
 
-**Read the chat transcripts first.** There are 1 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+Prototype **React 18 + JSX**, en un seul fichier HTML qui charge React, ReactDOM et Babel
+Standalone depuis un CDN et compile le JSX **dans le navigateur** (`type="text/babel"`).
 
-**Read `project/ScalTrade Landing.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+```
+index.html            Entrée de la page (CDN React/Babel, polices Google Fonts)
+src/
+  icons.jsx           Icônes SVG inline (style Lucide)
+  chart.jsx           Chandeliers procéduraux animés + sparklines
+  mockups.jsx         Chrome terminal, dashboard, chat AI Mentor
+  sections.jsx        Nav, social proof, problème/solution, features, comparatif, pricing, footer
+  app.jsx             Composition de la page (hero + sections + Tweaks panel)
+tweaks-panel.jsx      Panneau de réglages design (outil de maquette — à retirer en prod)
+docs/
+  DESIGN_HANDOFF.md   Instructions d'export Claude Design d'origine
+  chats/              Transcripts de la conversation de design
+```
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+## Lancer en local
 
-## About the design files
+C'est un fichier statique — il suffit de le servir :
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+```bash
+# au choix
+python3 -m http.server 8000     # puis ouvrir http://localhost:8000
+# ou
+npx serve .
+```
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+Ouvrir directement `index.html` via `file://` peut bloquer le chargement des modules `.jsx` :
+préférez un petit serveur HTTP local.
 
-## Bundle contents
+## ⚠️ Avant la production
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `riskdesk-landing` project files (HTML prototypes, assets, components)
+Ce dépôt est un **prototype**, pas un build de production :
+
+- Babel compile le JSX **dans le navigateur** → page lente, à pré-compiler.
+- React est chargé en build **développement** (non minifié).
+- Le **Tweaks panel** (`tweaks-panel.jsx`) est un outil de design à retirer.
+
+Pour la mise en ligne : convertir en build statique (Vite + React), retirer le Tweaks panel,
+puis déployer les assets sur l'instance GCP via un server block nginx dédié à `scaltrade.com`
+(IP statique, A records chez le registrar, HTTPS Let's Encrypt).
