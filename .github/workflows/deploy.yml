@@ -3,15 +3,19 @@ name: Build & Deploy
 # Builds the Vite production bundle and ships dist/ to the GCP VM behind nginx.
 #
 # ── One-time setup (see docs/CICD_SETUP.md) ──────────────────────────────────
-# Add these repository secrets (Settings → Secrets and variables → Actions):
-#   GCP_SA_KEY     JSON key of a service account with "Compute Instance Admin (v1)"
-#                  + "Service Account User" (or a tighter custom role allowing
-#                  compute.instances.get + OS Login / SSH to the instance).
-#   GCP_PROJECT    your GCP project id
-#   GCP_ZONE       e.g. us-central1-a   (the zone of the VM)
-#   GCP_INSTANCE   the VM name
+# Auth uses keyless Workload Identity Federation (this org blocks SA keys via
+# the iam.disableServiceAccountKeyCreation policy). Add these repo secrets
+# (Settings → Secrets and variables → Actions):
+#   GCP_WIF_PROVIDER  full provider resource name, e.g.
+#                     projects/<NUM>/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+#   GCP_SA_EMAIL      deployer service account email (impersonated via WIF) with
+#                     Compute Instance Admin (v1) + IAP Tunnel Resource Accessor
+#                     + Service Account User.
+#   GCP_PROJECT       your GCP project id
+#   GCP_ZONE          e.g. us-central1-a   (the zone of the VM)
+#   GCP_INSTANCE      the VM name
 # Optional repository variables (Settings → Variables) — have sane defaults below:
-#   REMOTE_DIR     defaults to /var/www/scaltrade
+#   REMOTE_DIR        defaults to /var/www/scaltrade
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
@@ -22,6 +26,10 @@ on:
 concurrency:
   group: deploy-main
   cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write   # required for keyless auth to Google Cloud (WIF)
 
 jobs:
   build-and-deploy:
@@ -41,10 +49,11 @@ jobs:
       - name: Build (Vite production)
         run: npm run build
 
-      - name: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud (keyless / WIF)
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
