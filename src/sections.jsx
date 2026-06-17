@@ -80,11 +80,11 @@ function Nav() {
           }}>BETA</span>
         </a>
         <div style={{flex:1,display:'flex',justifyContent:'center',gap:28}} className="hide-md">
-          {['Features','AI Mentor','Backtesting','Pricing','Docs'].map(t=>{
-            const isDocs = t === 'Docs';
+          {['Features','AI Mentor','Backtesting','Pricing','Formation'].map(t=>{
+            const isExt = t === 'Formation';
+            const href = isExt ? '/formation.html' : `#${t.toLowerCase().replace(/\s+/g,'-')}`;
             return (
-            <a key={t} href={isDocs ? '#' : `#${t.toLowerCase().replace(/\s+/g,'-')}`}
-              onClick={isDocs ? (e)=>{ e.preventDefault(); setToast('Docs — coming soon'); } : undefined}
+            <a key={t} href={href}
               style={{fontSize:14,color:'var(--muted)',transition:'color .15s',cursor:'pointer'}}
               onMouseEnter={e=>e.currentTarget.style.color='#fff'}
               onMouseLeave={e=>e.currentTarget.style.color='var(--muted)'}
